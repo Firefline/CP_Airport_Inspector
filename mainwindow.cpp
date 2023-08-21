@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->de_date->setDisabled(true);
     ui->pb_receiveData->setDisabled(true);
     ui->tb_result->setDisabled(true);
+    ui->pb_reseiveLoad->setDisabled(true);
 
     connect(this, &MainWindow::sig_startConnection, dataBase, &DataBase::startConnection);
     connect(dataBase, &DataBase::sig_connectionStatus, this, &MainWindow::statusConnection);
@@ -38,11 +39,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, &MainWindow::sig_sendAirportName, dialog, &Dialog::airportCurrentNameSetup);
     connect(this, &MainWindow::sig_sendYearData, dialog, &Dialog::yearGraph);
     connect(this, &MainWindow::sig_sendMonthData, dialog, &Dialog::monthGraph);
+    connect(dialog, &Dialog::sig_sendClose, this, &MainWindow::unlockMain);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete dataBase;
+    delete dialog;
 }
 
 void MainWindow::statusConnection(bool status)
@@ -58,6 +62,7 @@ void MainWindow::statusConnection(bool status)
             ui->cb_dateSelect->setDisabled(false);
             ui->pb_receiveData->setDisabled(false);
             ui->tb_result->setDisabled(false);
+            ui->pb_reseiveLoad->setDisabled(false);
         }
         else
         {
@@ -139,6 +144,13 @@ void MainWindow::on_pb_reseiveLoad_clicked()
     dataBase->receiveMonthData(airportCode);
     emit sig_sendMonthData(dataBase->monthDataIn, dataBase->monthDataOut);
     dialog->show();
+    ui->cb_airport->setDisabled(true);
+    ui->rb_arrival->setDisabled(true);
+    ui->rb_departure->setDisabled(true);
+    ui->cb_dateSelect->setDisabled(true);
+    ui->pb_receiveData->setDisabled(true);
+    ui->tb_result->setDisabled(true);
+    ui->pb_reseiveLoad->setDisabled(true);
 }
 
 
@@ -155,3 +167,13 @@ void MainWindow::on_cb_dateSelect_stateChanged(int arg1)
     }
 }
 
+void MainWindow::unlockMain()
+{
+    ui->cb_airport->setDisabled(false);
+    ui->rb_arrival->setDisabled(false);
+    ui->rb_departure->setDisabled(false);
+    ui->cb_dateSelect->setDisabled(false);
+    ui->pb_receiveData->setDisabled(false);
+    ui->tb_result->setDisabled(false);
+    ui->pb_reseiveLoad->setDisabled(false);
+}

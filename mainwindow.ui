@@ -123,6 +123,16 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <tabstops>
+  <tabstop>tb_result</tabstop>
+  <tabstop>cb_airport</tabstop>
+  <tabstop>rb_arrival</tabstop>
+  <tabstop>rb_departure</tabstop>
+  <tabstop>de_date</tabstop>
+  <tabstop>cb_dateSelect</tabstop>
+  <tabstop>pb_reseiveLoad</tabstop>
+  <tabstop>pb_receiveData</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

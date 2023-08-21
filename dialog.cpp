@@ -7,31 +7,29 @@ Dialog::Dialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    chart = new QChart( );
-    chart->legend()->setVisible(false);
-    chartView = new QChartView(chart);
+    chartYear = new QChart( );
+    chartYear->legend()->setVisible(false);
+    chartView = new QChartView(chartYear);
     layout = new QGridLayout;
+    setIn = new QBarSet("Прибытие");
+    setOut = new QBarSet("Отправление");
 
-    chart2 = new QChart( );
-    chart2->legend()->setVisible(false);
-    chartView2 = new QChartView(chart2);
-    layout2 = new QGridLayout;
-
-
-
+    chartMonth = new QChart( );
+    chartMonth->legend()->setVisible(false);
+    chartViewMonth = new QChartView(chartMonth);
+    layoutMonth = new QGridLayout;
+    seriesMonthIn = new QLineSeries;
+    seriesMonthOut = new QLineSeries;
 
     series = new QBarSeries;
-    chart->setTitle("Загруженность аэропорта за год");
+    chartYear->setTitle("Загруженность аэропорта за год");
     categories << "Январь" << "Февраль" << "Март" << "Апрель" << "Май" << "Июнь" << "Июль" << "Август" << "Сентябрь" << "Октябрь" << "Ноябрь" << "Декабрь";
     axisX = new QBarCategoryAxis();
     axisX->append(categories);
-    chart->addSeries(series);
-    chart->addAxis(axisX, Qt::AlignBottom);
+    chartYear->addSeries(series);
+    chartYear->addAxis(axisX, Qt::AlignBottom);
     axisY = new QValueAxis();
-    chart->addAxis(axisY, Qt::AlignLeft);
-
-
-
+    chartYear->addAxis(axisY, Qt::AlignLeft);
 
     ui->tabWidget->setTabText(0, "Загруженность за год");
     ui->tabWidget->setTabText(1, "Загруженность за выбранный месяц");
@@ -43,16 +41,23 @@ Dialog::Dialog(QWidget *parent) :
 Dialog::~Dialog()
 {
     delete ui;
-    delete chart;
+    delete chartYear;
     delete chartView;
-    delete chart2;
-    delete chartView2;
-    delete set0;
-    delete set1;
+    delete series;
+    delete axisX;
+    delete axisY;
+    delete setIn;
+    delete setOut;
+    delete chartMonth;
+    delete chartViewMonth;
+    delete layoutMonth;
+    delete seriesMonthIn;
+    delete seriesMonthOut;
 }
 
 void Dialog::on_pb_closeDialog_clicked()
 {
+    emit sig_sendClose();
     this->close();
 }
 
@@ -64,35 +69,34 @@ void Dialog::airportCurrentNameSetup(QString name)
 
 void Dialog::yearGraph(int dataIn[12], int dataOut[12])
 {
-    set0 = new QBarSet("Прибытие");
-    set1 = new QBarSet("Отправление");
-    chart->removeSeries(series);
-    chart->removeAxis(axisY);
+    if (chartYear->isEmpty() == false)
+    {
+        chartYear->removeSeries(series);
+        series->remove(setIn);
+        series->remove(setOut);
+    }
+    series->clear();
+    chartYear->removeAxis(axisY);
+    setIn = new QBarSet("Прибытие");
+    setOut = new QBarSet("Отправление");
     axisY = new QValueAxis();
     for (int i = 0; i < 12; ++i)
     {
-        *set0 << dataIn[i];
+        *setIn << dataIn[i];
     }
     for (int i = 0; i < 12; ++i)
     {
-        *set1 << dataOut[i];
+        *setOut << dataOut[i];
     }
-    series->append(set0);
-    series->append(set1);
-    chart->addAxis(axisY, Qt::AlignLeft);
-    chart->addSeries(series);
-    chart-> setAnimationOptions (QChart :: AllAnimations);
-
+    series->append(setIn);
+    series->append(setOut);
+    chartYear->addSeries(series);
+    series->setLabelsVisible(true);
+    chartYear->addAxis(axisY, Qt::AlignLeft);
+    chartYear-> setAnimationOptions (QChart :: AllAnimations);
     series->attachAxis(axisY);
-
-
-
-
-
-
-
-    chart->legend()->setVisible(false);
-    chart->legend()->setAlignment(Qt::AlignBottom);
+    chartYear->legend()->setVisible(true);
+    chartYear->legend()->setAlignment(Qt::AlignBottom);
     chartView->setRenderHint(QPainter::Antialiasing);
     ui->wd_yearGraph->setLayout(layout);
     layout->addWidget(chartView);
@@ -101,91 +105,102 @@ void Dialog::yearGraph(int dataIn[12], int dataOut[12])
 
 void Dialog::monthGraph(int dataIn[365], int dataOut[365])
 {
-    QLineSeries *series2 = new QLineSeries;
-    QLineSeries *series3 = new QLineSeries;
-    for (int i = iMin; i < iMax; ++i)
+    for (int i = 0; i < 365; ++i)
     {
-        //series2->append(i+1, dataIn[i]);
         dataInGraph[i] = dataIn[i];
-        series2->append(i+1, dataInGraph[i]);
-    }
-    for (int i = iMin; i < iMax; ++i)
-    {
-        //series2->append(i+1, dataOut[i]);
         dataOutGraph[i] = dataOut[i];
-        series3->append(i+1, dataOutGraph[i]);
     }
-    chart2->addSeries(series2);
-    chart2->addSeries(series3);
-    chart2->createDefaultAxes();
-    chart2->setTitle("Загруженность за выбранный месяц");
-    ui->wd_monthGraph->setLayout(layout2);
-    layout2->addWidget(chartView2);
-    chartView2->show();
+    if (chartMonth->series().isEmpty() == false )
+    {
+        chartMonth->removeSeries(seriesMonthIn);
+        chartMonth->removeSeries(seriesMonthOut);
+    }
+    seriesMonthIn->clear();
+    seriesMonthOut->clear();
+    for (int i = 0; i < iMax; ++i)
+    {
+        seriesMonthIn->append(i+1, dataIn[iMin + i]);
+        seriesMonthOut->append(i+1, dataOut[iMin + i]);
+    }
+    seriesMonthIn->setName("Прибытие");
+    seriesMonthOut->setName("Отправление");
+    chartMonth->addSeries(seriesMonthIn);
+    chartMonth->addSeries(seriesMonthOut);
+    chartMonth->createDefaultAxes();
+    chartMonth->setTitle("Загруженность за выбранный месяц");
+    chartMonth->legend()->setVisible(true);
+    ui->wd_monthGraph->setLayout(layoutMonth);
+    layoutMonth->addWidget(chartViewMonth);
+    chartViewMonth->show();
 }
 
 void Dialog::on_cb_month_currentIndexChanged(int index)
 {
-    if (index == 0)
+    if (index == 8)
     {
         iMin = 0;
+        iMax = 30;
+    }
+    if (index == 9)
+    {
+        iMin = 30;
+        iMax = 31;
+    }
+    if (index == 10)
+    {
+        iMin = 61;
+        iMax = 30;
+    }
+    if (index == 11)
+    {
+        iMin = 91;
+        iMax = 31;
+    }
+    if (index == 0)
+    {
+        iMin = 122;
         iMax = 31;
     }
     if (index == 1)
     {
-        iMin = 31;
-        iMax = 59;
+        iMin = 153;
+        iMax = 28;
     }
     if (index == 2)
     {
-        iMin = 59;
-        iMax = 90;
+        iMin = 188;
+        iMax = 31;
     }
     if (index == 3)
     {
-        iMin = 90;
-        iMax = 120;
+        iMin = 212;
+        iMax = 30;
     }
     if (index == 4)
     {
-        iMin = 120;
-        iMax = 151;
+        iMin = 242;
+        iMax = 31;
     }
     if (index == 5)
     {
-        iMin = 151;
-        iMax = 181;
+        iMin = 273;
+        iMax = 30;
     }
     if (index == 6)
     {
-        iMin = 181;
-        iMax = 212;
+        iMin = 303;
+        iMax = 31;
     }
     if (index == 7)
     {
-        iMin = 212;
-        iMax = 243;
-    }
-    if (index == 8)
-    {
-        iMin = 243;
-        iMax = 273;
-    }
-    if (index == 9)
-    {
-        iMin = 273;
-        iMax = 304;
-    }
-    if (index == 10)
-    {
-        iMin = 304;
-        iMax = 334;
-    }
-    if (index == 11)
-    {
         iMin = 334;
-        iMax = 365;
+        iMax = 31;
     }
     monthGraph(dataInGraph, dataOutGraph);
 }
 
+void Dialog::closeEvent(QCloseEvent *event)
+{
+    emit sig_sendClose();
+    this->close();
+}

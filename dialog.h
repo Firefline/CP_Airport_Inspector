@@ -31,7 +31,7 @@ public:
     QString airportCurrentName;
     QStringList categories;
 
-    int iMin = 0;
+    int iMin = 122;
     int iMax = 31;
 
     int dataInGraph[365];
@@ -41,6 +41,7 @@ public slots:
     void airportCurrentNameSetup(QString name);
     void yearGraph(int dataIn[12], int dataOut[12]);
     void monthGraph(int dataIn[365], int dataOut[365]);
+    void closeEvent(QCloseEvent *event);
 
 private slots:
     void on_pb_closeDialog_clicked();
@@ -49,22 +50,25 @@ private slots:
 
 signals:
     void sig_sendAirportNameToGraph(QString airport);
+    void sig_sendClose();
 
 private:
     Ui::Dialog *ui;
     DataBase* dataBaseGraph;
     Dialog* dialog;
-    QChart* chart;
+    QChart* chartYear;
     QChartView* chartView;
     QGridLayout *layout;
-    QChart* chart2;
-    QChartView* chartView2;
-    QGridLayout *layout2;
+    QChart* chartMonth;
+    QChartView* chartViewMonth;
+    QGridLayout *layoutMonth;
+    QLineSeries *seriesMonthIn;
+    QLineSeries *seriesMonthOut;
 
 
     QBarSeries *series;
-    QBarSet *set0;
-    QBarSet *set1;
+    QBarSet *setIn;
+    QBarSet *setOut;
     QBarCategoryAxis *axisX;
     QValueAxis *axisY;
 };

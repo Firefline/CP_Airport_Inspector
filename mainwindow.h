@@ -26,6 +26,7 @@ public:
 public slots:
     void ScreenDataFromDB(QSqlQueryModel *widget);
     void statusConnection(bool status);
+    void unlockMain();
 
 signals:
     void sig_startConnection();

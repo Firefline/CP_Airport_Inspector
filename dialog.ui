@@ -112,6 +112,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>le_airportCurrent</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>cb_month</tabstop>
+  <tabstop>pb_closeDialog</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
