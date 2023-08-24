@@ -24,11 +24,11 @@ Dialog::Dialog(QWidget *parent) :
     series = new QBarSeries;
     chartYear->setTitle("Загруженность аэропорта за год");
     categories << "Январь" << "Февраль" << "Март" << "Апрель" << "Май" << "Июнь" << "Июль" << "Август" << "Сентябрь" << "Октябрь" << "Ноябрь" << "Декабрь";
-    axisX = new QBarCategoryAxis();
+    axisX = new QBarCategoryAxis(this);
     axisX->append(categories);
     chartYear->addSeries(series);
     chartYear->addAxis(axisX, Qt::AlignBottom);
-    axisY = new QValueAxis();
+    axisY = new QValueAxis(this);
     chartYear->addAxis(axisY, Qt::AlignLeft);
 
     ui->tabWidget->setTabText(0, "Загруженность за год");
@@ -40,19 +40,26 @@ Dialog::Dialog(QWidget *parent) :
 
 Dialog::~Dialog()
 {
+    chartYear->removeSeries(series);
+    series->remove(setIn);
+    series->remove(setOut);
+    chartMonth->removeSeries(seriesMonthIn);
+    chartMonth->removeSeries(seriesMonthOut);
+
     delete ui;
     delete chartYear;
     delete chartView;
     delete series;
-    delete axisX;
-    delete axisY;
-    delete setIn;
-    delete setOut;
+    //delete axisX;
+    //delete axisY;
+    //delete setIn;
+    //delete setOut;
     delete chartMonth;
     delete chartViewMonth;
     delete layoutMonth;
     delete seriesMonthIn;
     delete seriesMonthOut;
+
 }
 
 void Dialog::on_pb_closeDialog_clicked()
@@ -79,7 +86,7 @@ void Dialog::yearGraph(int dataIn[12], int dataOut[12])
     chartYear->removeAxis(axisY);
     setIn = new QBarSet("Прибытие");
     setOut = new QBarSet("Отправление");
-    axisY = new QValueAxis();
+    axisY = new QValueAxis(axisY);
     for (int i = 0; i < 12; ++i)
     {
         *setIn << dataIn[i];
